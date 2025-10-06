@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"io"
 	"os"
 	"os/exec"
 )
@@ -10,10 +11,12 @@ type ExternalCommand struct {
 	Args []string
 }
 
-func (c *ExternalCommand) Execute() error {
-	cmd := exec.Command(c.Name, c.Args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
+func (e *ExternalCommand) Run(input io.Reader, output io.Writer) error {
+	cmd := exec.Command(e.Name, e.Args...)
+	cmd.Stdin = input
+	cmd.Stdout = output
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
+
+func (e *ExternalCommand) IsBuiltin() bool { return false }
