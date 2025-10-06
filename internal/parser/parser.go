@@ -1,43 +1,29 @@
 package parser
 
 import (
-	"fmt"
+	"io"
 	"minishell/internal/commands"
-	"strconv"
 	"strings"
 )
 
-func Parse(line string) (commands.Command, error) {
-	tokens := strings.Fields(line)
-	if len(tokens) == 0 {
-		return nil, nil
+type сommand interface {
+	Run(input io.Reader, output io.Writer) error
+	IsBuiltin() bool
+}
+
+func ParseCommand(cmdStr string) сommand {
+	fields := strings.Fields(cmdStr)
+	if len(fields) == 0 {
+		return nil
 	}
 
-	switch tokens[0] {
-	case "pwd":
-		return &commands.PwdCommand{}, nil
-	case "cd":
-		path := ""
-		if len(tokens) > 1 {
-			path = tokens[1]
-		}
-		return &commands.CdCommand{Path: path}, nil
-	case "echo":
-		return &commands.EchoCommand{Args: tokens[1:]}, nil
-	case "kill":
-		if len(tokens) < 2 {
-			return nil, fmt.Errorf("kill: missing pid")
-		}
-		pid, err := strconv.Atoi(tokens[1])
-		if err != nil {
-			return nil, fmt.Errorf("kill: invalid pid")
-		}
-		return &commands.KillCommand{Pid: pid}, nil
-	case "ps":
-		return &commands.PsCommand{}, nil
-	case "exit":
-		return &commands.ExitCommand{}, nil
+	name := fields[0]
+	args := fields[1:]
+
+	switch name {
+	case "cd", "exit":
+		return &commands.BuiltinCommand{Name: name, Args: args}
 	default:
-		return &commands.ExternalCommand{Name: tokens[0], Args: tokens[1:]}, nil
+		return &commands.ExternalCommand{Name: name, Args: args}
 	}
 }
