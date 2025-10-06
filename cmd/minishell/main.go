@@ -7,6 +7,7 @@ import (
 	"minishell/internal/command"
 	"minishell/internal/parser"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -15,7 +16,13 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
-		fmt.Print("minishell> ")
+		cwd, err := os.Getwd()
+		if err != nil {
+			cwd = "?"
+		}
+
+		fmt.Printf("%s -> ", filepath.Base(cwd))
+
 		if !scanner.Scan() {
 			break
 		}
