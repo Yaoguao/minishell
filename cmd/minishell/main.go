@@ -4,16 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"minishell/internal/command"
 	"minishell/internal/parser"
 	"os"
 	"strings"
 	"sync"
 )
-
-type сommand interface {
-	Run(input io.Reader, output io.Writer) error
-	IsBuiltin() bool
-}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -30,7 +26,7 @@ func main() {
 		}
 
 		parts := strings.Split(line, "|")
-		var cmds []сommand
+		var cmds []command.Command
 		for _, part := range parts {
 			cmd := parser.ParseCommand(strings.TrimSpace(part))
 			if cmd != nil {
@@ -42,7 +38,7 @@ func main() {
 	}
 }
 
-func RunPipeline(cmds []сommand) error {
+func RunPipeline(cmds []command.Command) error {
 	n := len(cmds)
 	if n == 0 {
 		return nil
@@ -75,7 +71,7 @@ func RunPipeline(cmds []сommand) error {
 			output = pipeWriters[i]
 		}
 
-		go func(cmd сommand, input io.Reader, output io.Writer) {
+		go func(cmd command.Command, input io.Reader, output io.Writer) {
 			defer wg.Done()
 			defer func() {
 				if w, ok := output.(*io.PipeWriter); ok {

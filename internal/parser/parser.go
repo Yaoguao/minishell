@@ -1,17 +1,11 @@
 package parser
 
 import (
-	"io"
-	"minishell/internal/commands"
+	"minishell/internal/command"
 	"strings"
 )
 
-type сommand interface {
-	Run(input io.Reader, output io.Writer) error
-	IsBuiltin() bool
-}
-
-func ParseCommand(cmdStr string) сommand {
+func ParseCommand(cmdStr string) command.Command {
 	fields := strings.Fields(cmdStr)
 	if len(fields) == 0 {
 		return nil
@@ -21,9 +15,9 @@ func ParseCommand(cmdStr string) сommand {
 	args := fields[1:]
 
 	switch name {
-	case "cd", "exit":
-		return &commands.BuiltinCommand{Name: name, Args: args}
+	case "cd", "exit", "echo":
+		return &command.BuiltinCommand{Name: name, Args: args}
 	default:
-		return &commands.ExternalCommand{Name: name, Args: args}
+		return &command.ExternalCommand{Name: name, Args: args}
 	}
 }
